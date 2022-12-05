@@ -26,9 +26,9 @@ public class UserCountDriver extends Configured implements Tool {
 
     @Override
     public int run(String[] args) throws Exception {
-        if (args.length != 2) {
+        if (args.length != 3) {
             System.err.println("Usage: example.hadoop.BusLineUserCountDriver <input> <output> <output2>");
-            System.exit(2);
+            System.exit(3);
         }
 
         Configuration conf = this.getConf();
@@ -44,27 +44,23 @@ public class UserCountDriver extends Configured implements Tool {
         FileInputFormat.addInputPath(job1, new Path(args[0]));
         FileOutputFormat.setOutputPath(job1, new Path(args[1]));
 
-        MultipleOutputs.addNamedOutput(job1, "DayOfWeek", TextOutputFormat.class, Text.class, IntWritable.class);
+//        MultipleOutputs.addNamedOutput(job1, "DayOfWeek", TextOutputFormat.class, Text.class, IntWritable.class);
         MultipleOutputs.addNamedOutput(job1, "Week", TextOutputFormat.class, Text.class, IntWritable.class);
         job1.waitForCompletion(true);
 
+        getConf().set(TextOutputFormat.SEPARATOR, ",");
         Configuration conf2 = this.getConf();
         Job job2 = Job.getInstance(conf2, "Top");
-
-        String inputDir = args[1];
-        String locationDir ="/locationDir";
-        String outputDir = "/output2";
-
         job2.setNumReduceTasks(1);
         job2.setJarByClass(UserCountDriver.class);
+        job2.setMapperClass(TopUserMapper.class);
+        job2.setReducerClass(TopUserReducer.class);
         job2.setMapOutputKeyClass(Text.class);
-        job2.setMapOutputValueClass(Text.class);
-        job2.setReducerClass(MyReducer.class);
-        MultipleInputs.addInputPath(job2, new Path(locationDir), KeyValueTextInputFormat.class, MyMapper1.class);
-        MultipleInputs.addInputPath(job2, new Path(inputDir), KeyValueTextInputFormat.class, MyMapper2.class);
-        job2.setOutputFormatClass(TextOutputFormat.class);
-        FileOutputFormat.setOutputPath(job2, new Path(outputDir));
-
+        job2.setMapOutputValueClass(LongWritable.class);
+        job2.setOutputKeyClass(Text.class);
+        job2.setOutputValueClass(LongWritable.class);
+        FileInputFormat.addInputPath(job2, new Path(args[1]));
+        FileOutputFormat.setOutputPath(job2, new Path(args[2]));
         boolean success = job2.waitForCompletion(true);
         return (success ? 0 : 1);
 

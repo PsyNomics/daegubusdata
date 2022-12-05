@@ -17,11 +17,11 @@ public class UserCountMapper extends Mapper<LongWritable, Text, Text, IntWritabl
 
         BusStationDTO dto = new BusStationDTO(value);
 
-        outputKey.set("dayOfWeek," + dto.getDayOfWeek() + "," + dto.getStationID());
-        outputValue.set(dto.getPassengerNum());
-        context.write(outputKey, outputValue);
+//        outputKey.set("dayOfWeek," + dto.getDayOfWeek() + "," + dto.getStationID());
+//        outputValue.set(dto.getPassengerNum());
+//        context.write(outputKey, outputValue);
 
-        outputKey.set("week," + dto.getWeek() + "," + dto.getStationID());
+        outputKey.set("week," + dto.getStationID() + "," + dto.getWeek());
         outputValue.set(dto.getPassengerNum());
         context.write(outputKey, outputValue);
     }
